@@ -1,4 +1,4 @@
-## An Implementation of a Balanced Kd Tree Builder Using GPUs
+## An Implementation of a Balanced K-D Tree Builder Using GPUs
 
 John Robinson
 
@@ -72,7 +72,6 @@ Another minor difference is that the coalescing scheme implemented here uses mas
 As described earlier, building the tree from the sorted arrays requires picking a median from one of the sorted coordinate reference arrays and then partition the other arrays about that median.  The median is a trivial operation, but partitioning like the sorting and duplicates removal, it requires a lot of data movement.  That implementation is described here.
 
 At the lowest level, the partitioner uses the same compaction algorithm as the duplicate removal function described earlier. In this case, a warp reads in 32 references and does the compare to the tuple that is the partitioning value.  As a result of the compare, the reference is written to one of two output buffers, one for greater than, one for less than.  (See Figure 1)  The address in those output buffers is determined using the same method of sharing the compare results the\_ballot intrinsic and counting the number of ones using the \_popc intrinsic.
-![Alt text](./K-DTreeImplementationDrawing1.svg)
 <img src="./K-DTreeImplementationDrawing1.svg">
 #### FIgure 1.  Single Pass Partitioning Process
 
