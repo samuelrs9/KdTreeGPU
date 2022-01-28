@@ -34,7 +34,7 @@
 ################################################################################
 
 # Location of the CUDA Toolkit
-CUDA_PATH       ?= /usr/local/cuda-7.5
+CUDA_PATH       ?= /usr/local/cuda
 
 OSUPPER = $(shell uname -s 2>/dev/null | tr "[:lower:]" "[:upper:]")
 OSLOWER = $(shell uname -s 2>/dev/null | tr "[:upper:]" "[:lower:]")
@@ -153,9 +153,11 @@ SAMPLE_ENABLED := 1
 
 # Gencode arguments
 ifeq ($(OS_ARCH),armv7l)
-SMS ?= 20 30 32 35 37 50
+# SMS ?= 20 30 32 35 37 50
+SMS ?= 20 32 35 37 50
 else
-SMS ?= 30 35 37 50
+SMS ?= 35 37 50
+#SMS ?= 30 35 37 50
 endif
 
 ifeq ($(SMS),)
@@ -224,3 +226,4 @@ clean:
 #	rm -rf ../../bin/$(OS_ARCH)/$(OSLOWER)/$(TARGET)$(if $(abi),/$(abi))/mergeSort
 
 clobber: clean
+

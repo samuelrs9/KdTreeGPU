@@ -46,6 +46,7 @@
 #include <iostream>
 #include <iomanip>
 #include <stdint.h>
+
 using std::setprecision;
 
 typedef int32_t KdCoord;
@@ -54,6 +55,42 @@ typedef int32_t refIdx_t;
 typedef int32_t sint;
 typedef uint32_t uint;
 
+
+//#if __cplusplus != 201103L
+#if 0
+
+#include <chrono>
+#define TIMER_DECLARATION()						\
+		auto startTime = std::chrono::high_resolution_clock::now();		\
+		auto endTime = <std::chrono::high_resolution_clock::now();
+#define TIMER_START()							\
+		startTime = std::chrono::high_resolution_clock::now(); // high_resolution_clock::is_steady
+#define TIMER_STOP(__TIMED)						\
+		endTime = std::chrono::high_resolution_clock::now();			\
+		__TIMED = (std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - startTime).count())/1000.0
+
+#elif defined(MACH)
+
+#define TIMER_DECLARATION()				\
+		struct timespec startTime, endTime;
+#define TIMER_START()						\
+		mach_gettime(CLOCK_REALTIME, &startTime);
+#define TIMER_STOP(__TIMED)					\
+		clock_gettime(CLOCK_REALTIME, &endTime);			\
+		__TIMED = (endTime.tv_sec - startTime.tv_sec) +			\
+		1.0e-9 * ((double)(endTime.tv_nsec - startTime.tv_nsec))
+#else
+
+#define TIMER_DECLARATION()				\
+		struct timespec startTime, endTime;
+#define TIMER_START()						\
+		clock_gettime(CLOCK_REALTIME, &startTime);
+#define TIMER_STOP(__TIMED)					\
+		clock_gettime(CLOCK_REALTIME, &endTime);			\
+		__TIMED = (endTime.tv_sec - startTime.tv_sec) +			\
+		1.0e-9 * ((double)(endTime.tv_nsec - startTime.tv_nsec))
+
+#endif
 
 /* One node of a k-d tree */
 class KdNode
@@ -151,6 +188,8 @@ public:
 	 */
 public:
 	static void printTuple(const KdCoord* tuple, const sint dim);
+	static void printTupleOriginal(const KdCoord* tuple, const sint dim);
+
 	/*
 	 * Print the k-d tree "sideways" with the root at the ltChild.
 	 *

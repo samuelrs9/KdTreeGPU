@@ -1,0 +1,14 @@
+{
+    "cmake.configureOnOpen": true,
+    "files.associations": {
+        "*.txt": "cmake",
+        "array": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp",
+        "chrono": "cpp",
+        "atomic": "cpp",
+        "cstdint": "cpp",
+        "iomanip": "cpp"
+    }
+}

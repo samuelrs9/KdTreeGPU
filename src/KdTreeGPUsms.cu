@@ -365,12 +365,12 @@ void KdNode::printKdTree(KdNode kdNodes[], const KdCoord coords[], const sint di
 sint main(sint argc, char **argv)
 {
 	// Set the defaults then parse the input arguments.
-	sint numPoints = 4194304;
+	sint numPoints = 2048;
 	sint extraPoints = 100;
 	sint numDimensions = 3;
 	sint numThreads = 512;
-	sint numBlocks = 32;
-	sint searchDistance = 20000000;
+	sint numBlocks = 2;
+	sint searchDistance = 1000;
 	sint maximumNumberOfNodesToPrint = 5;
 
 	for (sint i = 1; i < argc; i++) {
@@ -406,7 +406,7 @@ sint main(sint argc, char **argv)
 		exit(1);
 	}
 
-	sint  i = maximumNumberOfNodesToPrint + numDimensions + extraPoints;
+	sint i = maximumNumberOfNodesToPrint + numDimensions + extraPoints;
 	// Declare the two-dimensional coordinates array that contains (x,y,z) coordinates.
 	/*
     sint coordinates[NUM_TUPLES][DIMENSIONS] = {
@@ -452,11 +452,7 @@ sint main(sint argc, char **argv)
 		return 0;
 	}
 	TIMER_DECLARATION();
-	// Search the k-d tree for the k-d nodes that lie within the cutoff distance of the first tuple.
-	KdCoord* query = (KdCoord *)malloc(numDimensions * sizeof(KdCoord));
-	for (sint i = 0; i < numDimensions; i++) {
-		query[i] = coordinates[i];
-	}
+
 	// read the KdTree back from GPU
 	Gpu::getKdTreeResults( kdNodes,  coordinates, numPoints, numDimensions);
 #define VERIFY_ON_HOST
@@ -464,22 +460,45 @@ sint main(sint argc, char **argv)
 	sint numberOfNodes = root->verifyKdTree( kdNodes, coordinates, numDimensions, 0);
 	cout <<  "Number of nodes on host = " << numberOfNodes << endl;
 #endif
-	TIMER_START();
-	list<KdNode> kdList = root->searchKdTree(kdNodes, coordinates, query, searchDistance, numDimensions, 0);
+
+
+	TIMER_START();	
+	for (sint i = 0; i < 10; i++) {
+	
+		//cout << "----------- point " << i << "------------\n";
+		//Search the k-d tree for the k-d nodes that lie within the cutoff distance of the first tuple.
+		
+		KdCoord* query = (KdCoord *)malloc(numDimensions * sizeof(KdCoord));
+		for (sint j = 0; j < numDimensions; j++) {
+			query[j] = coordinates[i*numDimensions+j];
+		}
+
+		// KdCoord (*query) = new KdCoord[numPoints*numDimensions];
+		// for ( i = 0; i<numPoints; i++) {
+		// 	for (sint j=0; j<numDimensions; j++) {
+		// 		query[i*numDimensions+j] = (KdCoord)rand();
+		// 	}
+		// }		
+
+		list<KdNode> kdList = root->searchKdTree(kdNodes, coordinates, query, searchDistance, numDimensions, 0);
+
+		cout << endl << kdList.size() << " nodes within " << searchDistance << " units of ";
+
+		KdNode::printTuple(query, numDimensions);
+
+		//cout << " in all dimensions." << endl << endl;
+		if (kdList.size() != 0) {
+			cout << "List of k-d nodes within " << searchDistance << "-unit search distance follows:" << endl << endl;
+			
+			list<KdNode>::iterator it;
+			for (it = kdList.begin(); it != kdList.end(); it++) {
+				//KdNode::printTuple(coordinates+it->getTuple()*numDimensions, numDimensions);
+				//cout << " ";
+			}
+			//cout << endl;
+		}
+	}
 	TIMER_STOP(double searchTime);
 	cout << "searchTime = " << fixed << setprecision(2) << searchTime << " seconds" << endl << endl;
-
-	cout << endl << kdList.size() << " nodes within " << searchDistance << " units of ";
-	KdNode::printTuple(query, numDimensions);
-	cout << " in all dimensions." << endl << endl;
-	if (kdList.size() != 0) {
-		cout << "List of k-d nodes within " << searchDistance << "-unit search distance follows:" << endl << endl;
-		list<KdNode>::iterator it;
-		for (it = kdList.begin(); it != kdList.end(); it++) {
-			KdNode::printTuple(coordinates+it->getTuple()*numDimensions, numDimensions);
-			cout << " ";
-		}
-		cout << endl;
-	}
 	return 0;
 }
